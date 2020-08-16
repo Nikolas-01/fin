@@ -125,7 +125,7 @@ class BotHandler:
 
 
 # создание бота
-token = 'ВАШ_ТОКЕН_СЮДА ВСТАВИТЬ (КАВЫЧКИ НЕ УБИРАТЬ)'
+token = '942186377:AAG_-3GXycMIVqBmPgC3dToW3xtuOvZemXo'
 greet_bot = BotHandler(token)
 
 
