@@ -25,6 +25,7 @@ class BotHandler:
         method = 'getUpdates'
         params = {'timeout': timeout, 'offset': offset}
         resp = requests.get(self.api_url + method, params)
+        # print(result_json)
         result_json = resp.json()['result']
         return result_json
 
@@ -68,6 +69,7 @@ class BotHandler:
         ret = requests.post(self.api_url + method, data=data)
 
         # загружаем на сервер картинку
+        print(ret.json())
         data = {'file_path': ret.json()['result']['file_path']}
         ret = requests.get('https://api.telegram.org/file/bot{}/{}'.format(self.token, data['file_path']))
         if ret.status_code == 200:
@@ -126,6 +128,7 @@ class BotHandler:
 
 # создание бота
 token = '942186377:AAG_-3GXycMIVqBmPgC3dToW3xtuOvZemXo'
+
 greet_bot = BotHandler(token)
 
 
@@ -134,40 +137,46 @@ def main():
     new_offset = None
 
     while True:
-        # получаем обновленные данные
-        greet_bot.get_updates(new_offset)
-
-        last_update = greet_bot.get_last_update()
-
-        last_chat_caption = ''
-        last_chat_file_id = ''
         try:
-            last_chat_caption = last_update['message']['caption']
-            last_chat_file_id = last_update['message']['photo'][len(last_update['message']['photo'])-1]['file_id']
-        except Exception:
-            pass
+            # получаем обновленные данные
+            greet_bot.get_updates(new_offset)
 
-        last_update_id = last_update['update_id']
+            last_update = greet_bot.get_last_update()
 
-        last_chat_text = ''
-        try:
-            last_chat_text = last_update['message']['text']
-        except Exception:
-            pass
+            last_chat_caption = ''
+            last_chat_file_id = ''
+            try:
+                last_chat_caption = last_update['message']['caption']
+                last_chat_file_id = last_update['message']['photo'][len(last_update['message']['photo']) - 1]['file_id']
+            except Exception:
+                pass
 
-        last_chat_id = last_update['message']['chat']['id']
-        last_chat_name = last_update['message']['chat']['first_name']
+            last_update_id = last_update['update_id']
 
-        # на основе присланного сообщения отвечаем соответствующе
-        if last_chat_text == '/start':
-            greet_bot.send_message(last_chat_id, 'Привет, {}. Пришли мне любую фотографию в формате jpg'
-                                                 ', указав в описании целое неотрицательное число '
-                                                 '- количество цветов в новом изображении'.format(last_chat_name))
-        else:
-            greet_bot.load_photo(last_chat_file_id)
-            greet_bot.build_new_img(last_chat_id, last_chat_caption)
+            last_chat_text = ''
+            try:
+                last_chat_text = last_update['message']['text']
+            except Exception:
+                pass
 
-        new_offset = last_update_id + 1
+            last_chat_id = last_update['message']['chat']['id']
+            last_chat_name = last_update['message']['chat']['first_name']
+
+            # на основе присланного сообщения отвечаем соответствующе
+            if last_chat_text == '/start':
+                greet_bot.send_message(last_chat_id, 'Привет, {}. Пришли мне любую фотографию в формате jpg'
+                                                     ', указав в описании целое неотрицательное число '
+                                                     '- количество цветов в новом изображении'.format(last_chat_name))
+            else:
+                try:
+                    greet_bot.load_photo(last_chat_file_id)
+                    greet_bot.build_new_img(last_chat_id, last_chat_caption)
+                except Exception as e:
+                    print(e)
+
+            new_offset = last_update_id + 1
+        except Exception as e:
+            print(e)
 
 
 # запуск бота
